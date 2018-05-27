@@ -1,4 +1,4 @@
-import { Variable, Abstraction, FunctionApplication, AstError, Assignment, ExpressionStatement, StatementList } from "../src/ast";
+import { Variable, Abstraction, FunctionApplication, AstError, Assignment, ExpressionStatement, StatementList, Expression } from "../src/ast";
 import { pipeline } from 'stream';
 
 describe("ast", () => {
@@ -160,9 +160,15 @@ describe("ast", () => {
 
     });
 
-    test("format", () => {
+    function formatTest(text: string, tree: () => Expression) {
+        test("format - " + text, () => {
+            const t = tree();
+            expect(t.format()).toBe(text);
+        });
+    }
 
-        const s = new FunctionApplication(
+    formatTest("(λt. λf. t) v w", () =>
+        new FunctionApplication(
             new FunctionApplication(
                 new Abstraction("t",
                     new Abstraction("f",
@@ -172,9 +178,61 @@ describe("ast", () => {
                 new Variable("v")
             ),
             new Variable("w")
-        );
+        )
+    );
 
-        expect(s.format()).toBe("(λt. λf. t) v w");
+    formatTest("(λx. x z) λy. y", () =>
+        new FunctionApplication(
+            new Abstraction("x",
+                new FunctionApplication(
+                    new Variable("x"),
+                    new Variable("z")
+                )
+            ),
+            new Abstraction("y",
+                new Variable("y")
+            )
+        )
+    );
 
-    });
+    formatTest("x (y z)", () =>
+        new FunctionApplication(
+            new Variable("x"),
+            new FunctionApplication(
+                new Variable("y"),
+                new Variable("z")
+            )
+        )
+    );
+
+    formatTest("x y z", () =>
+        new FunctionApplication(
+            new FunctionApplication(
+                new Variable("x"),
+                new Variable("y")
+            ),
+            new Variable("z"),
+        )
+    );
+
+    formatTest("a λy. y", () =>
+        new FunctionApplication(
+            new Variable("a"),
+            new Abstraction("y",
+                new Variable("y")
+            )
+        )
+    );
+
+    formatTest("a (λy. y) z", () =>
+        new FunctionApplication(
+            new FunctionApplication(
+                new Variable("a"),
+                new Abstraction("y",
+                    new Variable("y")
+                )
+            ),
+            new Variable("z")
+        )
+    );
 });

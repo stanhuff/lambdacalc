@@ -73,17 +73,23 @@ export class FunctionApplication extends Expression {
         return this;
     }
 
-    format() {
-        return `${this.formatChild(this.func)} ${this.formatChild(this.arg)}`;
+    format(hasRight?: boolean) {
+        const left = this.formatChild(this.func, true);
+        const right = this.formatChild(this.arg, hasRight || false);
+        return this.arg instanceof FunctionApplication ? `${left} (${right})` : `${left} ${right}`;
     }
 
-    private formatChild(expr: Expression) {
-        return expr instanceof Abstraction ? `(${expr.format()})` : expr.format();
+    private formatChild(expr: Expression, hasRight: boolean): string {
+        if (expr instanceof FunctionApplication)
+            return expr.format(hasRight);
+        else
+            return hasRight && expr instanceof Abstraction ? `(${expr.format()})` : expr.format();
     }
 }
 
 export interface IO {
     output(text: string): void;
+    showSteps?: boolean;
 }
 
 export abstract class Statement extends Node {
@@ -122,7 +128,8 @@ export class ExpressionStatement extends Statement {
         let last = this.node;
         let pass = 0;
         while (true) {
-            io.output(this.getArrow(pass) + last.format());
+            if (io.showSteps)
+                io.output(this.getArrow(pass) + last.format());
             const substituted = last.substitute(scope);
             const reduced = substituted.reduce();
             if (last === reduced)
@@ -130,6 +137,8 @@ export class ExpressionStatement extends Statement {
             last = reduced;
             pass++;
         }
+        if (!io.showSteps)
+            io.output(last.format());
     }
 
     private getArrow(length: number) {

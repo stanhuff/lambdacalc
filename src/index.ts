@@ -7,6 +7,7 @@ runScript(
         output(v: string) {
             process.stdout.write(v);
             process.stdout.write("\n");
-        }
+        },
+        showSteps: true
     }
 );
