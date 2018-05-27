@@ -1,6 +1,9 @@
 tru = λt. λf. t;
 fls = λt. λf. f;
 test = λl. λm. λn. l m n;
+and = λb. λc. b c fls;
+or = λb. λc. b tru c;
+not = λb. b fls tru;
 
 tru pass fail;
 fls fail pass;
@@ -11,3 +14,16 @@ tru;
 test;
 
 test tru v w;
+
+and tru tru;
+and tru fls;
+and fls tru;
+and fls fls;
+
+or tru tru;
+or tru fls;
+or fls tru;
+or fls fls;
+
+not fls;
+not tru;

@@ -119,8 +119,28 @@ export class ExpressionStatement extends Statement {
     ) { super(); }
 
     execute(scope: { [index: string]: Expression }, io: IO): void {
-        const substituted = this.node.substitute(scope);
-        io.output(substituted.reduce().format());
+        let last = this.node;
+        let pass = 0;
+        while (true) {
+            io.output(this.format(last, pass));
+            const substituted = last.substitute(scope);
+            const reduced = substituted.reduce();
+            if (last === reduced)
+                break;
+            last = reduced;
+            pass++;
+        }
+    }
+
+    private format(expr: Expression, pass: number) {
+        let s = "";
+        if (pass > 0) {
+            for (let i = 0; i < pass; ++i)
+                s += "-";
+            s += "> ";
+        }
+        s += expr.format();
+        return s;
     }
 }
 
