@@ -122,7 +122,7 @@ export class ExpressionStatement extends Statement {
         let last = this.node;
         let pass = 0;
         while (true) {
-            io.output(this.format(last, pass));
+            io.output(this.getArrow(pass) + last.format());
             const substituted = last.substitute(scope);
             const reduced = substituted.reduce();
             if (last === reduced)
@@ -132,14 +132,13 @@ export class ExpressionStatement extends Statement {
         }
     }
 
-    private format(expr: Expression, pass: number) {
+    private getArrow(length: number) {
         let s = "";
-        if (pass > 0) {
-            for (let i = 0; i < pass; ++i)
+        if (length > 0) {
+            for (let i = 0; i < length; ++i)
                 s += "-";
             s += "> ";
         }
-        s += expr.format();
         return s;
     }
 }

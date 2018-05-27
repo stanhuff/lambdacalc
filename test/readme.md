@@ -1,0 +1,1 @@
+A simple interpetter for untyped lambda calculus. Look at the tests and in particular test/test.lc for an example script.
