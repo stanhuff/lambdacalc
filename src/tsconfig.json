@@ -1,0 +1,14 @@
+{
+  "extends": "../base-tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../build",
+    "noEmitOnError": true,
+    "module": "commonjs",    
+    "types": [
+      "node"
+    ]
+  },
+  "exclude": [
+    "**/__mocks__/**/*"
+  ]
+}
