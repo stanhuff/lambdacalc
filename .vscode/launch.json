@@ -13,7 +13,19 @@
             "args": [
                 "-i",
                 "-t",
-                "assignment"
+                "execute statementlist 2"
+            ],
+            "cwd": "${workspaceFolder}",
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "type": "node",
+            "protocol": "inspector",
+            "request": "launch",
+            "name": "Execute Prog",
+            "program": "${workspaceFolder}/build/index",
+            "args": [
+                "test/test.lc"
             ],
             "cwd": "${workspaceFolder}",
             "internalConsoleOptions": "openOnSessionStart"

@@ -50,7 +50,7 @@ export class Abstraction extends Expression {
     }
 
     format() {
-        return `(λ${this.variable}.${this.body.format()})`;
+        return `λ${this.variable}. ${this.body.format()}`;
     }
 }
 
@@ -74,7 +74,11 @@ export class FunctionApplication extends Expression {
     }
 
     format() {
-        return `(${this.func.format()}) (${this.func.format()})`;
+        return `${this.formatChild(this.func)} ${this.formatChild(this.arg)}`;
+    }
+
+    private formatChild(expr: Expression) {
+        return expr instanceof Abstraction ? `(${expr.format()})` : expr.format();
     }
 }
 

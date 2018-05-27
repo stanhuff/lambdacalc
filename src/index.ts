@@ -1,24 +1,12 @@
-import { Parser } from "./parser";
-import { Tokenizer } from "./tokenizer";
-import { } from "./ast";
 import * as fs from "fs";
+import { runScript } from './driver';
 
-const filename = process.argv[2];
-
-const file = fs.readFileSync(filename, "utf-8");
-
-const t = new Tokenizer(file);
-
-const p = new Parser(t.getTokens());
-
-const sl = p.parseStatementList();
-
-const scope = {};
-const io = {
-    output(v:string) {
-        process.stdout.write(v);
-        process.stdout.write("\n");
+runScript(
+    fs.readFileSync(process.argv[2], "utf-8"),
+    {
+        output(v: string) {
+            process.stdout.write(v);
+            process.stdout.write("\n");
+        }
     }
-};
-
-sl.execute(scope, io);
+);

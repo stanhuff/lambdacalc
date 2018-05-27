@@ -139,4 +139,42 @@ describe("ast", () => {
 
         expect(io.output).toBeCalledWith("true");
     });
+
+    test("execute statementlist 2", () => {
+        const sl = new StatementList(
+            new ExpressionStatement(
+                new FunctionApplication(
+                    new Abstraction(
+                        "y",
+                        new Variable("y")
+                    ),
+                    new Variable("x")
+                )
+            )
+        );
+
+        const scope = {},
+            io = { output: jest.fn() };
+        sl.execute(scope, io);
+        expect(io.output).toBeCalledWith("x");
+
+    });
+
+    test("format", () => {
+
+        const s = new FunctionApplication(
+            new FunctionApplication(
+                new Abstraction("t",
+                    new Abstraction("f",
+                        new Variable("t")
+                    )
+                ),
+                new Variable("v")
+            ),
+            new Variable("w")
+        );
+
+        expect(s.format()).toBe("(λt. λf. t) v w");
+
+    });
 });

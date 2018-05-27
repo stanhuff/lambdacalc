@@ -1,5 +1,13 @@
 tru = λt. λf. t;
 fls = λt. λf. f;
+test = λl. λm. λn. l m n;
 
 tru pass fail;
 fls fail pass;
+
+λy.y x;
+
+tru;
+test;
+
+test tru v w;
