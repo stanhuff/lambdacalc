@@ -49,8 +49,10 @@ abstract class TokenClass {
 
 class IdTokenClass extends TokenClass {
     tokenType = TokenType.ID;
-    isCodePoint(codePoint: number) {
-        return codePoint >= UPPER_A && codePoint <= UPPER_Z || codePoint >= LOWER_A && codePoint <= LOWER_Z;
+    isCodePoint(codePoint: number, idx: number) {
+        return idx == 0
+            ? codePoint >= UPPER_A && codePoint <= UPPER_Z || codePoint >= LOWER_A && codePoint <= LOWER_Z
+            : codePoint >= UPPER_A && codePoint <= UPPER_Z || codePoint >= LOWER_A && codePoint <= LOWER_Z || codePoint >= ZERO && codePoint <= NINE;
     }
 }
 
