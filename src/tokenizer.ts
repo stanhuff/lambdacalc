@@ -88,40 +88,50 @@ export class Tokenizer {
     }
 
     private getToken() {
-        const cp = this.text.codePointAt(this.idx);
-        if (cp === undefined) {
-            return undefined;
-        }
-        else {
-            switch (cp) {
-                case TokenType.PERIOD:
-                case TokenType.LAMBDA:
-                case TokenType.LPAREN:
-                case TokenType.RPAREN:
-                case TokenType.EQUALS:
-                case TokenType.SEMICOLON:
-                    const start = this.idx;
-                    const stop = ++this.idx;
-                    return new Token(cp, this.text, start, stop);
-                default:
-                    for (let i = 0; i < Tokenizer.tokenClasses.length; ++i) {
-                        if (Tokenizer.tokenClasses[i].isCodePoint(cp, 0)) {
-                            return this.parseTokenClass(Tokenizer.tokenClasses[i]);
-                        }
-                    }
-                    throw new ParseError(`Unexpected ${String.fromCodePoint(cp)}`);
-            }
+        const codePoint = this.text.codePointAt(this.idx);
+        return codePoint === undefined ? undefined : this.lexToken(codePoint);
+    }
+
+    private lexToken(codePoint: number) {
+        switch (codePoint) {
+            case TokenType.PERIOD:
+            case TokenType.LAMBDA:
+            case TokenType.LPAREN:
+            case TokenType.RPAREN:
+            case TokenType.EQUALS:
+            case TokenType.SEMICOLON:
+                const start = this.idx;
+                const stop = ++this.idx;
+                return new Token(codePoint, this.text, start, stop);
+            default:
+                const tokenClass = this.getTokenClass(codePoint);
+                if (tokenClass)
+                    return this.lexTokenClass(tokenClass);
+                throw new ParseError(`Unexpected ${String.fromCodePoint(codePoint)}`);
         }
     }
 
-    parseTokenClass(tokenClass: TokenClass) {
+    private getTokenClass(codePoint: number) {
+        for (let i = 0; i < Tokenizer.tokenClasses.length; ++i) {
+            if (Tokenizer.tokenClasses[i].isCodePoint(codePoint, 0)) {
+                return Tokenizer.tokenClasses[i];
+            }
+        }
+        return undefined;
+    }
+
+    private lexTokenClass(tokenClass: TokenClass) {
         const start = this.idx;
         let cp = this.text.codePointAt(this.idx);
         while (cp !== undefined && tokenClass.isCodePoint(cp, this.idx - start)) {
-            this.idx += (cp > 65535 ? 2 : 1);
+            this.idx += (isSurrogatePair(cp) ? 2 : 1);
             cp = this.text.codePointAt(this.idx);
         }
         const stop = this.idx;
         return new Token(tokenClass.tokenType, this.text, start, stop);
     }
+}
+
+function isSurrogatePair(codepoint: number) {
+    return codepoint > 65535;
 }

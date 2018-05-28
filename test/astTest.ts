@@ -1,4 +1,4 @@
-import { Variable, Abstraction, FunctionApplication, AstError, Assignment, ExpressionStatement, StatementList, Expression } from "../src/ast";
+import { Variable, Lambda, Call, AstError, Assignment, ExpressionStatement, StatementList, Expression, Evaluation, EvaluationType } from "../src/ast";
 import { pipeline } from 'stream';
 
 describe("ast", () => {
@@ -10,10 +10,10 @@ describe("ast", () => {
     });
 
     test("substitute into lambda", () => {
-        const node = new Abstraction("x", new FunctionApplication(new Variable("x"), new Variable("y")));
+        const node = new Lambda("x", new Call(new Variable("x"), new Variable("y")));
         expect(node.substitute({ x: new Variable("a"), y: new Variable("b") })).toEqual(
-            new Abstraction("x",
-                new FunctionApplication(
+            new Lambda("x",
+                new Call(
                     new Variable("x"),  // left the bounded "x"
                     new Variable("b")   // swapped the "y" for "b"
                 )
@@ -22,23 +22,23 @@ describe("ast", () => {
     });
 
     test("substitute unto function application", () => {
-        const node = new FunctionApplication(new Variable("x"), new Variable("y"));
+        const node = new Call(new Variable("x"), new Variable("y"));
         expect(node.substitute({ x: new Variable("a") })).toEqual(
-            new FunctionApplication(new Variable("a"), new Variable("y"))
+            new Call(new Variable("a"), new Variable("y"))
         );
     });
 
     test("no free variable on lambda is no substitution", () => {
-        const node = new Abstraction("x", new FunctionApplication(new Variable("x"), new Variable("y")));
+        const node = new Lambda("x", new Call(new Variable("x"), new Variable("y")));
         expect(node.substitute({ z: new Variable("a") })).toEqual(
             node
         );
     });
 
     test("function application", () => {
-        const node = new Abstraction("x", new FunctionApplication(new Variable("x"), new Variable("y")));
+        const node = new Lambda("x", new Call(new Variable("x"), new Variable("y")));
         expect(node.apply(new Variable("b"))).toEqual(
-            new FunctionApplication(
+            new Call(
                 new Variable("b"),
                 new Variable("y")
             )
@@ -46,15 +46,15 @@ describe("ast", () => {
     });
 
     test("function application reduction - truApp", () => {
-        const tru = new Abstraction(
+        const tru = new Lambda(
             "t",
-            new Abstraction(
+            new Lambda(
                 "f",
                 new Variable("t")
             )
         );
 
-        const truApp = new FunctionApplication(new FunctionApplication(tru, new Variable('a')), new Variable('b'));
+        const truApp = new Call(new Call(tru, new Variable('a')), new Variable('b'));
 
         expect(truApp.reduce()).toEqual(
             new Variable("a")
@@ -62,15 +62,15 @@ describe("ast", () => {
     });
 
     test("function application reduction - flsApp", () => {
-        const tru = new Abstraction(
+        const tru = new Lambda(
             "t",
-            new Abstraction(
+            new Lambda(
                 "f",
                 new Variable("f")
             )
         );
 
-        const flsApp = new FunctionApplication(new FunctionApplication(tru, new Variable('a')), new Variable('b'));
+        const flsApp = new Call(new Call(tru, new Variable('a')), new Variable('b'));
 
         expect(flsApp.reduce()).toEqual(
             new Variable("b")
@@ -79,7 +79,7 @@ describe("ast", () => {
 
     test("application of non-func", () => {
 
-        const expr = new FunctionApplication(new Variable('a'), new Variable('b'));
+        const expr = new Call(new Variable('a'), new Variable('b'));
         expect(expr.reduce()).toEqual(expr);
 
     });
@@ -97,8 +97,8 @@ describe("ast", () => {
     test("execute expression", () => {
 
         const stat = new ExpressionStatement(
-            new FunctionApplication(
-                new Abstraction(
+            new Call(
+                new Lambda(
                     "x",
                     new Variable("x")
                 ),
@@ -116,15 +116,15 @@ describe("ast", () => {
     test("execute statement list", () => {
         const sl = new StatementList(
             new Assignment("tru",
-                new Abstraction("t",
-                    new Abstraction("f",
+                new Lambda("t",
+                    new Lambda("f",
                         new Variable("t")
                     )
                 )
             ),
             new ExpressionStatement(
-                new FunctionApplication(
-                    new FunctionApplication(
+                new Call(
+                    new Call(
                         new Variable("tru"),
                         new Variable("true")
                     ),
@@ -143,8 +143,8 @@ describe("ast", () => {
     test("execute statementlist 2", () => {
         const sl = new StatementList(
             new ExpressionStatement(
-                new FunctionApplication(
-                    new Abstraction(
+                new Call(
+                    new Lambda(
                         "y",
                         new Variable("y")
                     ),
@@ -160,6 +160,20 @@ describe("ast", () => {
 
     });
 
+    test("substitute on demand", () => {
+        const expr = new ExpressionStatement(new Variable("tru"));
+        const scope = {
+            tru: new Lambda("t",
+                new Lambda("f",
+                    new Variable("t")
+                )
+            )
+        },
+            io = { output: jest.fn() };
+        expr.execute(scope, io);
+        expect(io.output).toBeCalledWith("tru");
+    });
+
     function formatTest(text: string, tree: () => Expression) {
         test("format - " + text, () => {
             const t = tree();
@@ -168,10 +182,10 @@ describe("ast", () => {
     }
 
     formatTest("(λt. λf. t) v w", () =>
-        new FunctionApplication(
-            new FunctionApplication(
-                new Abstraction("t",
-                    new Abstraction("f",
+        new Call(
+            new Call(
+                new Lambda("t",
+                    new Lambda("f",
                         new Variable("t")
                     )
                 ),
@@ -182,23 +196,23 @@ describe("ast", () => {
     );
 
     formatTest("(λx. x z) λy. y", () =>
-        new FunctionApplication(
-            new Abstraction("x",
-                new FunctionApplication(
+        new Call(
+            new Lambda("x",
+                new Call(
                     new Variable("x"),
                     new Variable("z")
                 )
             ),
-            new Abstraction("y",
+            new Lambda("y",
                 new Variable("y")
             )
         )
     );
 
     formatTest("x (y z)", () =>
-        new FunctionApplication(
+        new Call(
             new Variable("x"),
-            new FunctionApplication(
+            new Call(
                 new Variable("y"),
                 new Variable("z")
             )
@@ -206,8 +220,8 @@ describe("ast", () => {
     );
 
     formatTest("x y z", () =>
-        new FunctionApplication(
-            new FunctionApplication(
+        new Call(
+            new Call(
                 new Variable("x"),
                 new Variable("y")
             ),
@@ -216,23 +230,263 @@ describe("ast", () => {
     );
 
     formatTest("a λy. y", () =>
-        new FunctionApplication(
+        new Call(
             new Variable("a"),
-            new Abstraction("y",
+            new Lambda("y",
                 new Variable("y")
             )
         )
     );
 
     formatTest("a (λy. y) z", () =>
-        new FunctionApplication(
-            new FunctionApplication(
+        new Call(
+            new Call(
                 new Variable("a"),
-                new Abstraction("y",
+                new Lambda("y",
                     new Variable("y")
                 )
             ),
             new Variable("z")
         )
     );
+
+    test("evaluate unresolved call", () => {
+        const expr = new Call(new Variable("a"), new Variable("b"));
+
+        expect(expr.evaluate({})).toBe(expr);
+    });
+
+    test("evaluateOnce unresolved call", () => {
+        const expr = new Call(new Variable("a"), new Variable("b"));
+
+        expect(expr.evaluateOnce({})).toEqual(new Evaluation(EvaluationType.none, expr));
+    });
+
+    test("evaluate partly unresolved call", () => {
+        const expr = new Call(new Variable("a"), new Variable("b"));
+
+        expect(expr.evaluate({ a: new Variable("c") })).toEqual(
+            new Call(new Variable("c"), new Variable("b"))
+        );
+    });
+
+    test("evaluate - a ((λx.x) c)", () => {
+
+        const expr = new Call(
+            new Variable("a"),
+            new Call(
+                new Lambda("x",
+                    new Variable("x")
+                ),
+                new Variable("c")
+            )
+        )
+
+        expect(expr.evaluate({})).toEqual(
+            new Call(
+                new Variable("a"),
+                new Variable("c")
+            )
+        );
+    });
+
+    test("evaluate pair", () => {
+
+        const scope = {
+            pair: new Lambda("f",
+                new Lambda("s",
+                    new Lambda("b",
+                        new Call(
+                            new Call(
+                                new Variable("b"),
+                                new Variable("f")
+                            ),
+                            new Variable("s")
+                        )
+                    )
+                )
+            ),
+            fst: new Lambda("p",
+                new Call(
+                    new Variable("p"),
+                    new Variable("tru")
+                )
+            ),
+            tru: new Lambda("t",
+                new Lambda("f",
+                    new Variable("t")
+                )
+            )
+        };
+
+        let expr = new Call(
+            new Variable("fst"),
+            new Call(
+                new Call(
+                    new Variable("pair"),
+                    new Variable("v")
+                ),
+                new Variable("w")
+            )
+        );
+
+        let evaluation = expr.evaluateOnce(scope);
+        expect(evaluation).toEqual(
+            new Evaluation(EvaluationType.substitute,
+                new Call(
+                    new Variable("fst"),
+                    new Call(
+                        new Call(
+                            new Lambda("f",
+                                new Lambda("s",
+                                    new Lambda("b",
+                                        new Call(
+                                            new Call(
+                                                new Variable("b"),
+                                                new Variable("f")
+                                            ),
+                                            new Variable("s")
+                                        )
+                                    )
+                                )
+                            ),
+                            new Variable("v")
+                        ),
+                        new Variable("w")
+                    )
+                )
+            )
+        );
+
+        evaluation = evaluation.result.evaluateOnce(scope);
+        expect(evaluation).toEqual(
+            new Evaluation(EvaluationType.reduction,
+                new Call(
+                    new Variable("fst"),
+                    new Call(
+                        new Lambda("s",
+                            new Lambda("b",
+                                new Call(
+                                    new Call(
+                                        new Variable("b"),
+                                        new Variable("v")
+                                    ),
+                                    new Variable("s")
+                                )
+                            )
+                        ),
+                        new Variable("w")
+                    )
+                )
+            )
+        );
+
+        evaluation = evaluation.result.evaluateOnce(scope);
+        expect(evaluation).toEqual(
+            new Evaluation(EvaluationType.reduction,
+                new Call(
+                    new Variable("fst"),
+                    new Lambda("b",
+                        new Call(
+                            new Call(
+                                new Variable("b"),
+                                new Variable("v")
+                            ),
+                            new Variable("w")
+                        )
+                    )
+                )
+            )
+        );
+
+        evaluation = evaluation.result.evaluateOnce(scope);
+        expect(evaluation).toEqual(
+            new Evaluation(EvaluationType.substitute,
+                new Call(
+                    new Lambda("p",
+                        new Call(
+                            new Variable("p"),
+                            new Variable("tru")
+                        )
+                    ),
+                    new Lambda("b",
+                        new Call(
+                            new Call(
+                                new Variable("b"),
+                                new Variable("v")
+                            ),
+                            new Variable("w")
+                        )
+                    )
+                )
+            )
+        );
+
+        evaluation = evaluation.result.evaluateOnce(scope);
+        expect(evaluation).toEqual(
+            new Evaluation(EvaluationType.reduction,
+                new Call(
+                    new Lambda("b",
+                        new Call(
+                            new Call(
+                                new Variable("b"),
+                                new Variable("v")
+                            ),
+                            new Variable("w")
+                        )
+                    ),
+                    new Variable("tru")
+                )
+            )
+        );
+
+        evaluation = evaluation.result.evaluateOnce(scope);
+        expect(evaluation).toEqual(
+            new Evaluation(EvaluationType.reduction,
+                new Call(
+                    new Call(
+                        new Variable("tru"),
+                        new Variable("v")
+                    ),
+                    new Variable("w")
+                )
+            )
+        );
+
+        evaluation = evaluation.result.evaluateOnce(scope);
+        expect(evaluation).toEqual(
+            new Evaluation(EvaluationType.substitute,
+                new Call(
+                    new Call(
+                        new Lambda("t",
+                            new Lambda("f",
+                                new Variable("t")
+                            )
+                        ),
+                        new Variable("v")
+                    ),
+                    new Variable("w")
+                )
+            )
+        );
+
+        evaluation = evaluation.result.evaluateOnce(scope);
+        expect(evaluation).toEqual(
+            new Evaluation(EvaluationType.reduction,
+                new Call(
+                    new Lambda("f",
+                        new Variable("v")
+                    ),
+                    new Variable("w")
+                )
+            )
+        );
+
+        evaluation = evaluation.result.evaluateOnce(scope);
+        expect(evaluation).toEqual(
+            new Evaluation(EvaluationType.reduction,
+                new Variable("v")
+            )
+        );
+    });
 });

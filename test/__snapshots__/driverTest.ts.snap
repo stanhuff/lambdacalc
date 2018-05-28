@@ -1,3 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`driver simple 1`] = `"passpassλy. y xλt. λf. tλl. λm. λn. l m nv"`;
+exports[`driver simple 1`] = `"passpassλy. y xtrutestv"`;
+
+exports[`driver steps 1`] = `"    tru pass fail =  (λt. λf. t) pass fail--> (λf. pass) fail--> pass    fls fail pass =  (λt. λf. f) fail pass--> (λf. f) pass--> pass    λy. y x    tru    test    test tru v w =  (λl. λm. λn. l m n) tru v w--> (λm. λn. tru m n) v w--> (λn. tru v n) w--> tru v w =  (λt. λf. t) v w--> (λf. v) w--> v"`;

@@ -1,6 +1,6 @@
 import { Token, TokenType, getTokenTypeName } from "./tokenizer";
 import { toArray, filter } from "tse-utils/itrUtils";
-import { Node, Variable, FunctionApplication, Abstraction, StatementList, Assignment, ExpressionStatement, Statement, Expression } from './ast';
+import { Node, Variable, Call, Lambda, StatementList, Assignment, ExpressionStatement, Statement, Expression } from './ast';
 import { ParseError } from './parserUtils';
 
 export class Parser {
@@ -56,7 +56,7 @@ export class Parser {
         let func = this.parsePrimary();
         while (!this.isApplyTerminator()) {
             const arg = this.parsePrimary();
-            func = new FunctionApplication(func, arg);
+            func = new Call(func, arg);
         }
         return func;
     }
@@ -86,7 +86,7 @@ export class Parser {
         const paramToken = this.ensure(TokenType.ID);
         this.ensure(TokenType.PERIOD);
         const body = this.parseApply();
-        return new Abstraction(paramToken.text, body);
+        return new Lambda(paramToken.text, body);
     }
 
     private get token() { return this.tokens[this.idx]; }

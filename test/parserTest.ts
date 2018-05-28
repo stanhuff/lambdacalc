@@ -2,7 +2,7 @@ import { Parser } from "../src/parser";
 import { ParseError } from "../src/parserUtils";
 import { getTokenList } from './testUtils';
 import { TokenType } from '../src/tokenizer';
-import { Variable, FunctionApplication, Abstraction, StatementList, Assignment, ExpressionStatement } from '../src/ast';
+import { Variable, Call, Lambda, StatementList, Assignment, ExpressionStatement } from '../src/ast';
 
 describe("parser", () => {
 
@@ -30,7 +30,7 @@ describe("parser", () => {
         const p = new Parser(tokens);
 
         expect(p.parse()).toEqual(
-            new FunctionApplication(new Variable("x"), new Variable("y"))
+            new Call(new Variable("x"), new Variable("y"))
         );
     });
 
@@ -47,7 +47,7 @@ describe("parser", () => {
         const p = new Parser(tokens);
 
         expect(p.parse()).toEqual(
-            new Abstraction("x", new FunctionApplication(new Variable("x"), new Variable("y")))
+            new Lambda("x", new Call(new Variable("x"), new Variable("y")))
         );
     });
 
@@ -77,9 +77,9 @@ describe("parser", () => {
 
         const p = new Parser(tokens);
         expect(p.parse()).toEqual(
-            new FunctionApplication(
+            new Call(
                 new Variable("a"),
-                new FunctionApplication(
+                new Call(
                     new Variable("b"),
                     new Variable("c")
                 )
@@ -157,7 +157,7 @@ describe("parser", () => {
         expect(p.parseStatementList()).toEqual(
             new StatementList(
                 new Assignment("id",
-                    new Abstraction(
+                    new Lambda(
                         "x",
                         new Variable("x")
                     )
@@ -179,7 +179,7 @@ describe("parser", () => {
         expect(p.parseStatementList()).toEqual(
             new StatementList(
                 new ExpressionStatement(
-                    new FunctionApplication(
+                    new Call(
                         new Variable("x"),
                         new Variable("y")
                     )
