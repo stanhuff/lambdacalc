@@ -137,8 +137,12 @@ export class Call extends Expression {
 
     private evaluateArg(variables: Scope) {
         let arg = this.arg;
-        while (arg instanceof Call)
-            arg = arg.evaluate(variables);
+        while (arg instanceof Call) {
+            const next = arg.evaluate(variables);
+            if (next === arg)
+                break;
+            arg = next;
+        }
         return arg;
     }
 
