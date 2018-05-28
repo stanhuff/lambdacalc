@@ -73,7 +73,16 @@ export class Lambda extends Expression {
         return variables;
     }
 
-    evaluateOnce(variables: Scope): Evaluation { return new Evaluation(EvaluationType.none, this); }
+    evaluateOnce(variables: Scope): Evaluation {
+        /* simplify lambda
+        if (!(this.body instanceof Variable)) {
+            const evaluation = this.body.evaluateOnce(variables);
+            if (evaluation.result !== this.body)
+                return new Evaluation(evaluation.type, new Lambda(this.variable, evaluation.result));
+        }
+        */
+        return new Evaluation(EvaluationType.none, this);
+    }
 
     evaluate(variables: Scope) {
         return this;

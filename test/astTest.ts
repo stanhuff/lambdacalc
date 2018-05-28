@@ -290,6 +290,22 @@ describe("ast", () => {
         );
     });
 
+    /*  for when lambdas are simplified
+    test("evaluateOnce - λx. (λy. y) t", () => {
+
+        const expr = new Lambda("x",
+            new Call(
+                new Lambda("y",
+                    new Variable("y")
+                ),
+                new Variable("t")
+            )
+        );
+
+        expect(expr.evaluateOnce({})).toEqual(new Evaluation(EvaluationType.reduction, new Lambda("x", new Variable("t"))));
+    });
+    */
+
     test("evaluate pair", () => {
 
         const scope = {
