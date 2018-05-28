@@ -145,14 +145,10 @@ export class Call extends Expression {
     private evaluateFunc(variables: Scope) {
         let func = this.func;
         while (!(func instanceof Lambda)) {
-            if (func instanceof Call)
-                func = func.evaluate(variables);
-            else {
-                const next = func.substitute(variables);
-                if (next === func)
-                    break;
-                func = next;
-            }
+            const next = func instanceof Call ? func.evaluate(variables) : func.substitute(variables);
+            if (next === func)
+                break;
+            func = next;
         }
         return func;
     }
