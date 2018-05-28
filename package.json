@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "node_modules/.bin/jest",
+    "prepare": "node_modules/.bin/tsc -p src/tsconfig.json",
+    "reduce": "node build/reduce.js",
+    "evaluate": "node build/evaluate.js"
   },
   "repository": {
     "type": "git",
