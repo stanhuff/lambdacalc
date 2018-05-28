@@ -1,5 +1,5 @@
 import { Token, TokenType, getTokenTypeName } from "./tokenizer";
-import { toArray, filter } from "tse-utils/itrUtils";
+import { toArray, filter } from "./utils";
 import { Node, Variable, Call, Lambda, StatementList, Assignment, ExpressionStatement, Statement, Expression } from './ast';
 import { ParseError } from './parserUtils';
 

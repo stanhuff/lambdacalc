@@ -1,5 +1,5 @@
 import { Tokenizer, Token, TokenType } from "../src/tokenizer";
-import { toArray } from "tse-utils/itrUtils";
+import { toArray } from "../src/utils";
 import { ParseError } from '../src/parserUtils';
 import { getTokenList } from './testUtils';
 

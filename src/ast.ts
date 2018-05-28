@@ -1,5 +1,5 @@
 import { ParseError } from './parserUtils';
-import { panic } from "tse-utils/assertUtils";
+import { panic } from "./utils";
 
 export abstract class Node {
 }
