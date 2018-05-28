@@ -26,6 +26,10 @@ iszro = λm. m (λx. fls) tru;
 zz = pair c0 c0;
 ss = λp. pair (snd p) (plus c1 (snd p));
 prd = λm. fst (m ss zz);
+sub = λm. λn. n prd m;
+equal = λm. λn. and (iszro (sub m n)) (iszro (sub n m));
+ge = λm. λn. iszro (sub n m);
+le = λm. λn. iszro (sub m n);
 
 tru pass fail;
 fls fail pass;
