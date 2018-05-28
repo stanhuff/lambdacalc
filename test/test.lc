@@ -23,6 +23,9 @@ scc = λn. λs. λz. s (n s z);
 plus = λm. λn. λs. λz. m s (n s z);
 times = λm. λn. m (plus n) c0;
 iszro = λm. m (λx. fls) tru;
+zz = pair c0 c0;
+ss = λp. pair (snd p) (plus c1 (snd p));
+prd = λm. fst (m ss zz);
 
 tru pass fail;
 fls fail pass;
@@ -56,3 +59,5 @@ iszro c1;
 scc c0;
 plus c2 c3;
 times c2 c3;
+
+prd c2;
