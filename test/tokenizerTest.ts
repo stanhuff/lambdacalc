@@ -7,7 +7,7 @@ describe("tokenizer", () => {
 
     test("good chars", () => {
 
-        const text = "x yz λa.(s 90 )";
+        const text = "x yz λa.(s 90 ) -> ";
         expect(toArray(new Tokenizer(text).getTokens())).toEqual(
             getTokenList([
                 [TokenType.ID],
@@ -23,6 +23,9 @@ describe("tokenizer", () => {
                 [TokenType.NUM, 2],
                 [TokenType.WHITESPACE],
                 [TokenType.RPAREN],
+                [TokenType.WHITESPACE],
+                [TokenType.ARROW, 2],
+                [TokenType.WHITESPACE],
                 [TokenType.EOF, 0],
             ], text)
         );

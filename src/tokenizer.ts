@@ -4,6 +4,8 @@ const SPACE = 0x20,
     TAB = 0x9,
     NL = 0xA,
     CR = 0xD,
+    DASH = '-'.charCodeAt(0),
+    GREATER = '>'.charCodeAt(0),
     UPPER_A = 'A'.charCodeAt(0),
     LOWER_A = 'a'.charCodeAt(0),
     UPPER_Z = 'Z'.charCodeAt(0),
@@ -20,6 +22,7 @@ export enum TokenType {
     RPAREN = 41,
     WHITESPACE = -3,
     ID = -4,
+    ARROW = -5,
     EQUALS = '='.charCodeAt(0),
     SEMICOLON = ';'.charCodeAt(0)
 }
@@ -56,6 +59,20 @@ class IdTokenClass extends TokenClass {
     }
 }
 
+class ArrowTokenClass extends TokenClass {
+    tokenType = TokenType.ARROW;
+    isCodePoint(codePoint: number, idx: number) {
+        switch (idx) {
+            case 0:
+                return codePoint === DASH;
+            case 1:
+                return codePoint === GREATER;
+            default:
+                return false;
+        }
+    }
+}
+
 class NumberTokenClass extends TokenClass {
     tokenType = TokenType.NUM;
     isCodePoint(codePoint: number) {
@@ -77,7 +94,7 @@ export class Tokenizer {
         private text: string
     ) { }
 
-    private static tokenClasses: TokenClass[] = [new IdTokenClass(), new NumberTokenClass(), new WhitespaceTokenClass()];
+    private static tokenClasses: TokenClass[] = [new WhitespaceTokenClass(), new IdTokenClass(), new ArrowTokenClass(), new NumberTokenClass()];
 
     *getTokens() {
         for (; ;) {

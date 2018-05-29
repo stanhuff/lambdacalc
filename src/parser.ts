@@ -19,7 +19,7 @@ export class Parser {
             case TokenType.EOF:
                 return undefined;
             default:
-                return this.parseApply();
+                return this.parseCall();
         }
     }
 
@@ -35,7 +35,7 @@ export class Parser {
     private parseStatement(): Statement {
         const statement = (this.token.type == TokenType.ID && this.LA.type === TokenType.EQUALS)
             ? this.parseAssignmentStatement()
-            : this.parseFunctionApplicationStatement();
+            : this.parseCallStatement();
         this.ensure(TokenType.SEMICOLON);
         return statement;
     }
@@ -43,16 +43,16 @@ export class Parser {
     private parseAssignmentStatement() {
         const id = this.ensure(TokenType.ID);
         this.ensure(TokenType.EQUALS);
-        const value = this.parseApply();
+        const value = this.parseCall();
         return new Assignment(id.text, value);
     }
 
-    private parseFunctionApplicationStatement() {
-        const application = this.parseApply();
+    private parseCallStatement() {
+        const application = this.parseCall();
         return new ExpressionStatement(application);
     }
 
-    private parseApply(): Expression {
+    private parseCall(): Expression {
         let func = this.parsePrimary();
         while (!this.isApplyTerminator()) {
             const arg = this.parsePrimary();
@@ -69,23 +69,33 @@ export class Parser {
         switch (this.token.type) {
             case TokenType.LPAREN:
                 this.consume();
-                const term = this.parseApply();
+                const term = this.parseCall();
                 this.ensure(TokenType.RPAREN);
                 return term;
             case TokenType.ID:
-                return new Variable(this.consume().text);
+                if (this.LA.type === TokenType.ARROW)
+                    return this.parseArrowLambda();                
+                else
+                    return new Variable(this.consume().text);
             case TokenType.LAMBDA:
-                return this.parseFunc();
+                return this.parseLambda();
             default:
                 return this.reportError(`Unexpected token type ${getTokenTypeName(this.token.type)}.  Expected ${getTokenTypeName(TokenType.LPAREN)}, ${getTokenTypeName(TokenType.LAMBDA)}, or ${getTokenTypeName(TokenType.ID)}`, this.token);
         }
     }
 
-    private parseFunc(): Expression {
+    private parseArrowLambda(): Expression {
+        const paramToken = this.ensure(TokenType.ID);
+        this.ensure(TokenType.ARROW);
+        const body = this.parseCall();
+        return new Lambda(paramToken.text, body);
+    }
+
+    private parseLambda(): Expression {
         this.ensure(TokenType.LAMBDA);
         const paramToken = this.ensure(TokenType.ID);
         this.ensure(TokenType.PERIOD);
-        const body = this.parseApply();
+        const body = this.parseCall();
         return new Lambda(paramToken.text, body);
     }
 

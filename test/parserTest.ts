@@ -39,15 +39,39 @@ describe("parser", () => {
             [TokenType.LAMBDA],
             [TokenType.ID],
             [TokenType.PERIOD],
+            [TokenType.LAMBDA],
+            [TokenType.ID],
+            [TokenType.PERIOD],
             [TokenType.ID],
             [TokenType.WHITESPACE],
             [TokenType.ID],
             [TokenType.EOF, 0]
-        ], "λx.x y");
+        ], "λx.λy.x y");
         const p = new Parser(tokens);
 
         expect(p.parse()).toEqual(
-            new Lambda("x", new Call(new Variable("x"), new Variable("y")))
+            new Lambda("x", new Lambda("y", new Call(new Variable("x"), new Variable("y"))))
+        );
+    });
+
+    test("arrow lambda", () => {
+        const tokens = getTokenList([
+            [TokenType.ID],
+            [TokenType.WHITESPACE],
+            [TokenType.ARROW, 2],
+            [TokenType.WHITESPACE],
+            [TokenType.ID],
+            [TokenType.WHITESPACE],
+            [TokenType.ARROW, 2],
+            [TokenType.WHITESPACE],
+            [TokenType.ID],
+            [TokenType.WHITESPACE],
+            [TokenType.ID],
+            [TokenType.EOF, 0]
+        ], "x -> y -> x y");
+        const p = new Parser(tokens);
+        expect(p.parse()).toEqual(
+            new Lambda("x", new Lambda("y", new Call(new Variable("x"), new Variable("y"))))
         );
     });
 
