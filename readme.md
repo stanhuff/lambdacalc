@@ -13,11 +13,12 @@ The language includes:
     lambdas:                λx. x
     variables:              y
     applications:           (λx. x) y
+      or with arrow:        (x -> x) y
     assignments:            fn = λt. λf. t;
 
-An example script file cam be found at test/test.lc.  The file extension is irrelevant.
+An example script file can be found at test/test.lc.  The file extension is irrelevant.
 
-Building/install
+Building/install (Nothing installs outside repo folder)
 ---
 1. clone the repo locally
 2. npm install
@@ -29,4 +30,5 @@ Run tests
 
 Notes
 ---
-The lambda notation makes use of the actual lambda greek character which makes it easier to read but more difficult to type.  Its code point U-03BB.  I may add an alternate syntax like x -> x to make it easier at some point.
+The lambda notation makes use of the actual lambda greek character which makes it easier to read but more difficult to type.  Its code point U-03BB.  One can use the 
+arrow notation for entry instead for input but any reduced expressions will be printed using the lambda character.
