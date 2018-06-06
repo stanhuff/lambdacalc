@@ -16,7 +16,10 @@ The language includes:
       or with arrow:        (x -> x) y
     assignments:            fn = λt. λf. t;
 
-An example script file can be found at test/test.lc.  The file extension is irrelevant.
+An example script file can be found at test/test.lc and can be run with one of the following commands from the root of the repo:
+
+    npm run reduce test/test.lc
+    npm run evaluate test/test.lc
 
 Building/install (Nothing installs outside repo folder)
 ---
